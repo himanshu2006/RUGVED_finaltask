@@ -1,0 +1,23 @@
+[0.696s] Invoking command in '/home/himanshu/ws_final/build/bot_brain': PYTHONPATH=/home/himanshu/ws_final/build/bot_brain/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_brain/build --no-deps symlink_data
+[0.906s] running develop
+[1.021s] running egg_info
+[1.022s] creating bot_brain.egg-info
+[1.022s] writing bot_brain.egg-info/PKG-INFO
+[1.022s] writing dependency_links to bot_brain.egg-info/dependency_links.txt
+[1.022s] writing entry points to bot_brain.egg-info/entry_points.txt
+[1.022s] writing requirements to bot_brain.egg-info/requires.txt
+[1.022s] writing top-level names to bot_brain.egg-info/top_level.txt
+[1.022s] writing manifest file 'bot_brain.egg-info/SOURCES.txt'
+[1.023s] reading manifest file 'bot_brain.egg-info/SOURCES.txt'
+[1.024s] writing manifest file 'bot_brain.egg-info/SOURCES.txt'
+[1.025s] running build_ext
+[1.025s] Creating /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot-brain.egg-link (link to .)
+[1.026s] 
+[1.026s] Installed /home/himanshu/ws_final/build/bot_brain
+[1.026s] running symlink_data
+[1.026s] creating /home/himanshu/ws_final/install/bot_brain/share/ament_index
+[1.026s] creating /home/himanshu/ws_final/install/bot_brain/share/ament_index/resource_index
+[1.026s] creating /home/himanshu/ws_final/install/bot_brain/share/ament_index/resource_index/packages
+[1.026s] symbolically linking /home/himanshu/ws_final/build/bot_brain/resource/bot_brain -> /home/himanshu/ws_final/install/bot_brain/share/ament_index/resource_index/packages
+[1.026s] symbolically linking /home/himanshu/ws_final/build/bot_brain/package.xml -> /home/himanshu/ws_final/install/bot_brain/share/bot_brain
+[1.050s] Invoked command in '/home/himanshu/ws_final/build/bot_brain' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_brain/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_brain/build --no-deps symlink_data

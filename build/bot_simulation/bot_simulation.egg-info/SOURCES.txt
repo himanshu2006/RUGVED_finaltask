@@ -1,0 +1,12 @@
+package.xml
+setup.cfg
+setup.py
+bot_simulation/__init__.py
+bot_simulation.egg-info/PKG-INFO
+bot_simulation.egg-info/SOURCES.txt
+bot_simulation.egg-info/dependency_links.txt
+bot_simulation.egg-info/entry_points.txt
+bot_simulation.egg-info/requires.txt
+bot_simulation.egg-info/top_level.txt
+bot_simulation.egg-info/zip-safe
+resource/bot_simulation

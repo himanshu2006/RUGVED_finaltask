@@ -1,0 +1,12 @@
+package.xml
+setup.cfg
+setup.py
+bot_brain/__init__.py
+bot_brain.egg-info/PKG-INFO
+bot_brain.egg-info/SOURCES.txt
+bot_brain.egg-info/dependency_links.txt
+bot_brain.egg-info/entry_points.txt
+bot_brain.egg-info/requires.txt
+bot_brain.egg-info/top_level.txt
+bot_brain.egg-info/zip-safe
+resource/bot_brain
