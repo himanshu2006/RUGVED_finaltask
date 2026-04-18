@@ -1,0 +1,21 @@
+[0.585s] Invoking command in '/home/himanshu/ws_final/src/bot_simulation': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/bot_simulation build --build-base /home/himanshu/ws_final/build/bot_simulation/build install --record /home/himanshu/ws_final/build/bot_simulation/install.log --single-version-externally-managed install_data
+[0.727s] running egg_info
+[0.728s] writing ../../build/bot_simulation/bot_simulation.egg-info/PKG-INFO
+[0.728s] writing dependency_links to ../../build/bot_simulation/bot_simulation.egg-info/dependency_links.txt
+[0.728s] writing entry points to ../../build/bot_simulation/bot_simulation.egg-info/entry_points.txt
+[0.728s] writing requirements to ../../build/bot_simulation/bot_simulation.egg-info/requires.txt
+[0.728s] writing top-level names to ../../build/bot_simulation/bot_simulation.egg-info/top_level.txt
+[0.729s] reading manifest file '../../build/bot_simulation/bot_simulation.egg-info/SOURCES.txt'
+[0.731s] writing manifest file '../../build/bot_simulation/bot_simulation.egg-info/SOURCES.txt'
+[0.731s] running build
+[0.731s] running build_py
+[0.731s] running install
+[0.731s] running install_lib
+[0.732s] running install_data
+[0.732s] copying model/robot_model.xacro -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/model
+[0.732s] running install_egg_info
+[0.733s] removing '/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation-0.0.0-py3.10.egg-info' (and everything under it)
+[0.733s] Copying ../../build/bot_simulation/bot_simulation.egg-info to /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation-0.0.0-py3.10.egg-info
+[0.734s] running install_scripts
+[0.747s] writing list of installed files to '/home/himanshu/ws_final/build/bot_simulation/install.log'
+[0.762s] Invoked command in '/home/himanshu/ws_final/src/bot_simulation' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/bot_simulation build --build-base /home/himanshu/ws_final/build/bot_simulation/build install --record /home/himanshu/ws_final/build/bot_simulation/install.log --single-version-externally-managed install_data

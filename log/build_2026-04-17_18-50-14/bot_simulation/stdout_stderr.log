@@ -1,0 +1,16 @@
+running develop
+running egg_info
+writing bot_simulation.egg-info/PKG-INFO
+writing dependency_links to bot_simulation.egg-info/dependency_links.txt
+writing entry points to bot_simulation.egg-info/entry_points.txt
+writing requirements to bot_simulation.egg-info/requires.txt
+writing top-level names to bot_simulation.egg-info/top_level.txt
+reading manifest file 'bot_simulation.egg-info/SOURCES.txt'
+writing manifest file 'bot_simulation.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot-simulation.egg-link (link to .)
+
+Installed /home/himanshu/ws_final/build/bot_simulation
+running symlink_data
+symbolically linking /home/himanshu/ws_final/build/bot_simulation/resource/bot_simulation -> /home/himanshu/ws_final/install/bot_simulation/share/ament_index/resource_index/packages
+symbolically linking /home/himanshu/ws_final/build/bot_simulation/package.xml -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation

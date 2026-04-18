@@ -1,0 +1,18 @@
+[0.902s] Invoking command in '/home/himanshu/ws_final/build/bot_brain': PYTHONPATH=/home/himanshu/ws_final/build/bot_brain/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_brain/build --no-deps symlink_data --force
+[1.376s] running develop
+[1.631s] running egg_info
+[1.632s] writing bot_brain.egg-info/PKG-INFO
+[1.632s] writing dependency_links to bot_brain.egg-info/dependency_links.txt
+[1.632s] writing entry points to bot_brain.egg-info/entry_points.txt
+[1.632s] writing requirements to bot_brain.egg-info/requires.txt
+[1.632s] writing top-level names to bot_brain.egg-info/top_level.txt
+[1.635s] reading manifest file 'bot_brain.egg-info/SOURCES.txt'
+[1.636s] writing manifest file 'bot_brain.egg-info/SOURCES.txt'
+[1.638s] running build_ext
+[1.639s] Creating /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot-brain.egg-link (link to .)
+[1.641s] 
+[1.641s] Installed /home/himanshu/ws_final/build/bot_brain
+[1.641s] running symlink_data
+[1.641s] symbolically linking /home/himanshu/ws_final/build/bot_brain/resource/bot_brain -> /home/himanshu/ws_final/install/bot_brain/share/ament_index/resource_index/packages
+[1.642s] symbolically linking /home/himanshu/ws_final/build/bot_brain/package.xml -> /home/himanshu/ws_final/install/bot_brain/share/bot_brain
+[1.719s] Invoked command in '/home/himanshu/ws_final/build/bot_brain' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_brain/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_brain/build --no-deps symlink_data --force

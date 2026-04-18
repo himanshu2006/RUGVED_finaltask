@@ -1,0 +1,19 @@
+# VS Code specific (The culprit!)
+.vscode/
+*.code-workspace
+.history/
+
+# ROS 2 Build Artifacts (Crucial for CPS/Robotics)
+build/
+install/
+log/
+
+# Python & System files
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Large Database files
+*.db
+*.sqlite

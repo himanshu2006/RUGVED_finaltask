@@ -1,0 +1,35 @@
+[0.670s] Invoking command in '/home/himanshu/ws_final/build/bot_simulation': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /home/himanshu/ws_final/build/bot_simulation/build
+[0.878s] running develop
+[0.995s] Removing /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot-simulation.egg-link (link to .)
+[1.019s] Invoked command in '/home/himanshu/ws_final/build/bot_simulation' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --uninstall --editable --build-directory /home/himanshu/ws_final/build/bot_simulation/build
+[1.020s] Invoking command in '/home/himanshu/ws_final/src/bot_simulation': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/bot_simulation build --build-base /home/himanshu/ws_final/build/bot_simulation/build install --record /home/himanshu/ws_final/build/bot_simulation/install.log --single-version-externally-managed install_data --force
+[1.210s] running egg_info
+[1.210s] writing ../../build/bot_simulation/bot_simulation.egg-info/PKG-INFO
+[1.210s] writing dependency_links to ../../build/bot_simulation/bot_simulation.egg-info/dependency_links.txt
+[1.210s] writing entry points to ../../build/bot_simulation/bot_simulation.egg-info/entry_points.txt
+[1.210s] writing requirements to ../../build/bot_simulation/bot_simulation.egg-info/requires.txt
+[1.210s] writing top-level names to ../../build/bot_simulation/bot_simulation.egg-info/top_level.txt
+[1.212s] reading manifest file '../../build/bot_simulation/bot_simulation.egg-info/SOURCES.txt'
+[1.213s] writing manifest file '../../build/bot_simulation/bot_simulation.egg-info/SOURCES.txt'
+[1.213s] running build
+[1.213s] running build_py
+[1.214s] running install
+[1.214s] running install_lib
+[1.214s] creating /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation
+[1.214s] copying /home/himanshu/ws_final/build/bot_simulation/build/lib/bot_simulation/__init__.py -> /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation
+[1.215s] byte-compiling /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation/__init__.py to __init__.cpython-310.pyc
+[1.215s] running install_data
+[1.215s] copying resource/bot_simulation -> /home/himanshu/ws_final/install/bot_simulation/share/ament_index/resource_index/packages
+[1.215s] copying package.xml -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation
+[1.215s] creating /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/launch
+[1.215s] copying launch/spdemergency.launch.py -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/launch
+[1.215s] creating /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/model
+[1.215s] copying model/robot_model.xacro -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/model
+[1.215s] creating /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/config
+[1.215s] copying config/bridge.yaml -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/config
+[1.215s] creating /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation/worlds
+[1.215s] running install_egg_info
+[1.217s] Copying ../../build/bot_simulation/bot_simulation.egg-info to /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot_simulation-0.0.0-py3.10.egg-info
+[1.217s] running install_scripts
+[1.235s] writing list of installed files to '/home/himanshu/ws_final/build/bot_simulation/install.log'
+[1.267s] Invoked command in '/home/himanshu/ws_final/src/bot_simulation' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/bot_simulation build --build-base /home/himanshu/ws_final/build/bot_simulation/build install --record /home/himanshu/ws_final/build/bot_simulation/install.log --single-version-externally-managed install_data --force

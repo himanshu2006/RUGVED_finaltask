@@ -1,0 +1,20 @@
+# Bridge configuration for ROS 2 Humble / Ignition Fortress
+- topic: /scan
+  ros_type: sensor_msgs/msg/LaserScan
+  gz_type: ignition.msgs.LaserScan
+  direction: GZ_TO_ROS
+
+- topic: /camera/image_raw
+  ros_type: sensor_msgs/msg/Image
+  gz_type: ignition.msgs.Image
+  direction: GZ_TO_ROS
+
+- topic: /cmd_vel
+  ros_type: geometry_msgs/msg/Twist
+  gz_type: ignition.msgs.Twist
+  direction: ROS_TO_GZ
+
+- topic: /model/my_bot/tf
+  ros_type: tf2_msgs/msg/TFMessage
+  gz_type: ignition.msgs.Pose_V
+  direction: GZ_TO_ROS

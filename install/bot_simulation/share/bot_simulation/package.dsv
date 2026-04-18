@@ -4,6 +4,3 @@ source;share/bot_simulation/hook/pythonpath.sh
 source;share/bot_simulation/hook/ament_prefix_path.ps1
 source;share/bot_simulation/hook/ament_prefix_path.dsv
 source;share/bot_simulation/hook/ament_prefix_path.sh
-source;../../build/bot_simulation/share/bot_simulation/hook/pythonpath_develop.ps1
-source;../../build/bot_simulation/share/bot_simulation/hook/pythonpath_develop.dsv
-source;../../build/bot_simulation/share/bot_simulation/hook/pythonpath_develop.sh

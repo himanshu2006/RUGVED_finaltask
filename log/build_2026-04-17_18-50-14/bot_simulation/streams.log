@@ -1,0 +1,18 @@
+[0.895s] Invoking command in '/home/himanshu/ws_final/build/bot_simulation': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_simulation/build --no-deps symlink_data --force
+[1.360s] running develop
+[1.614s] running egg_info
+[1.615s] writing bot_simulation.egg-info/PKG-INFO
+[1.615s] writing dependency_links to bot_simulation.egg-info/dependency_links.txt
+[1.615s] writing entry points to bot_simulation.egg-info/entry_points.txt
+[1.615s] writing requirements to bot_simulation.egg-info/requires.txt
+[1.615s] writing top-level names to bot_simulation.egg-info/top_level.txt
+[1.618s] reading manifest file 'bot_simulation.egg-info/SOURCES.txt'
+[1.620s] writing manifest file 'bot_simulation.egg-info/SOURCES.txt'
+[1.622s] running build_ext
+[1.622s] Creating /home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages/bot-simulation.egg-link (link to .)
+[1.625s] 
+[1.625s] Installed /home/himanshu/ws_final/build/bot_simulation
+[1.625s] running symlink_data
+[1.626s] symbolically linking /home/himanshu/ws_final/build/bot_simulation/resource/bot_simulation -> /home/himanshu/ws_final/install/bot_simulation/share/ament_index/resource_index/packages
+[1.626s] symbolically linking /home/himanshu/ws_final/build/bot_simulation/package.xml -> /home/himanshu/ws_final/install/bot_simulation/share/bot_simulation
+[1.679s] Invoked command in '/home/himanshu/ws_final/build/bot_simulation' returned '0': PYTHONPATH=/home/himanshu/ws_final/build/bot_simulation/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/himanshu/ws_final/install/bot_simulation/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/himanshu/ws_final/build/bot_simulation/build --no-deps symlink_data --force
