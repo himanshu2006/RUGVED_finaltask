@@ -16,7 +16,6 @@ def generate_launch_description():
     xacro_file = os.path.join(pkg_path, 'model', 'robot_model.xacro')
     # world_file = os.path.join(pkg_path, 'worlds', 'empty.sdf') 
     world_file= 'empty.sdf'
-    bridge_config = os.path.join(pkg_path, 'config', 'bridge.yaml')
 
     # 2. Convert Xacro to URDF (Uses 'Command' from substitutions)
     robot_description_config = Command(['xacro ', xacro_file])

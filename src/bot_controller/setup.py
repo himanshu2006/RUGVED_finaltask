@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'bot_brain'
+package_name = 'bot_controller'
 
 setup(
     name=package_name,
@@ -24,7 +24,6 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'obstacle_avoid_node = bot_brain.obstacle_avoid_node:main',
         ],
     },
 )
