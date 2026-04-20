@@ -44,9 +44,9 @@ class obstacleavoid(Node):
     
     def speed_new(self,current):
         max_w=0.5
-        drop_ratio = 0.5
+        drop_ratio = 0.4
         turn_percentage = min(abs(current) / max_w, 1.0)
-        self.new_speed = 0.2* (1 - (drop_ratio * turn_percentage))
+        self.new_speed = 0.4* (1 - (drop_ratio * turn_percentage))
 
         return max(self.new_speed, 0.1)
 
@@ -90,7 +90,7 @@ class obstacleavoid(Node):
             twist_msg.linear.x=speed
             twist_msg.angular.z=max(min(angle,0.5),-0.5)
         else:
-            twist_msg.linear.x=0.2
+            twist_msg.linear.x=0.4
             twist_msg.angular.z=0.0
             self.integral = 0.0
             self.prev_error = 0.0
