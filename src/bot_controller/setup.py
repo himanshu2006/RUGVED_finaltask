@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'sign_navigator = bot_controller.sign_navigator:main',
         ],
     },
 )
