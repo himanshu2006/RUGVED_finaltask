@@ -174,7 +174,7 @@
   <joint name="camera_joint" type="fixed">
     <parent link="body_link"/>
     <child link="camera_link"/>
-    <origin xyz="${camera_length/3.5 + body_link_x_dim/2 } 0 0" rpy="0 0 0"/>
+    <origin xyz="${camera_length/3.5 + body_link_x_dim/2 } 0 ${body_link_z_dim - camera_length*1.5}" rpy="0 0 0"/>
   </joint>
 
   <link name="camera_link">

@@ -1,5 +1,7 @@
+/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/shadow_ranger.py
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/__init__.py
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/obstacle_avoid_node.py
+/home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/__pycache__/shadow_ranger.cpython-310.pyc
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/__pycache__/__init__.cpython-310.pyc
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain/__pycache__/obstacle_avoid_node.cpython-310.pyc
 /home/himanshu/ws_final/install/bot_brain/share/ament_index/resource_index/packages/bot_brain
@@ -12,3 +14,4 @@
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain-0.0.0-py3.10.egg-info/zip-safe
 /home/himanshu/ws_final/install/bot_brain/lib/python3.10/site-packages/bot_brain-0.0.0-py3.10.egg-info/entry_points.txt
 /home/himanshu/ws_final/install/bot_brain/lib/bot_brain/obstacle_avoid_node
+/home/himanshu/ws_final/install/bot_brain/lib/bot_brain/shadow_ranger

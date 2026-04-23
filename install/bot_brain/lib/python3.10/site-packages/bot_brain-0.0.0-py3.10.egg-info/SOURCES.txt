@@ -10,6 +10,7 @@ setup.py
 ../../build/bot_brain/bot_brain.egg-info/zip-safe
 bot_brain/__init__.py
 bot_brain/obstacle_avoid_node.py
+bot_brain/shadow_ranger.py
 resource/bot_brain
 test/test_copyright.py
 test/test_flake8.py

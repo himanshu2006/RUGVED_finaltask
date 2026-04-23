@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'obstacle_avoid_node = bot_brain.obstacle_avoid_node:main',
+            'shadow_ranger = bot_brain.shadow_ranger:main '
         ],
     },
 )
