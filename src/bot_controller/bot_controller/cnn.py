@@ -1,247 +1,229 @@
 import os
 import cv2
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
-
-class_map = {
-    "left": 0,
-    "right": 1,
-    "stop": 2,
-    "uturn": 3
-}
-
-def load_dataset(split_path):
-    img_size = 64
-    images = []
-    labels = []
-
-    for class_name in ["left", "right", "stop", "uturn"]:
-        class_path = os.path.join(split_path, class_name)
-        if not os.path.exists(class_path): continue
-        for file in os.listdir(class_path):
-            img_path = os.path.join(class_path, file)
-            img = cv2.imread(img_path)
-            if img is None: continue
-            
-            # --- THE RED CHANNEL FIX ---
-            img = cv2.resize(img, (img_size, img_size))
-            
-            # Extract ONLY the Red channel (Index 2 in BGR)
-            # Red signs become bright white, green backgrounds become dark.
-            img_red = img[:, :, 2] 
-            
-            # Normalize based on the red channel
-            img_normalized = (img_red - np.mean(img_red)) / (np.std(img_red) + 1e-7)  
-            
-            images.append(img_normalized)
-            labels.append(class_map[class_name])
-            
-    unique, counts = np.unique(labels, return_counts=True)
-    print("Class distribution:", dict(zip(unique, counts)))
-
-    return np.array(images), np.array(labels)
 
 # ==========================================
-# VECTORIZED LAYERS (NO LOOPS)
+# 1. SETTINGS & PREPROCESSING
 # ==========================================
+DATA_DIR = "/home/himanshu/ws_final/src/bot_controller/master_dataset/data/test"
+WEIGHTS_PATH = "/home/himanshu/ws_final/src/model_weights.npz"
+CLASSES = {'left': 0, 'right': 1, 'stop': 2, 'uturn': 3}
 
-def conv_layer_forward(images, kernels, biases):
-    """
-    Highly optimized Convolution using sliding windows and Einstein Summation.
-    """
-    kh, kw = kernels.shape[1], kernels.shape[2]
+def load_dataset(data_dir, max_samples=200):
+    images, labels = [], []
+    print(f" Loading and Augmenting dataset from {data_dir}...")
     
-    # Extract all possible 3x3 windows from the image at once
-    # Shape becomes: (B, out_h, out_w, kh, kw)
-    windows = sliding_window_view(images, (kh, kw), axis=(1, 2))
-    
-    # Multiply and sum windows with kernels instantly
-    # b=batch, x=out_h, y=out_w, k=filters, h=kernel_h, w=kernel_w
-    output = np.einsum('bxyhw,khw->bkxy', windows, kernels)
-    
-    # Add bias to each filter channel
-    output += biases[None, :, None, None]
-    return output, windows
-
-def maxpool2d_forward(x):
-    """
-    Clever reshape trick for pure NumPy 2x2 Max Pooling without loops.
-    Assumes dimensions are divisible by 2.
-    """
-    B, K, H, W = x.shape
-    # Reshape to isolate 2x2 blocks, then take the max over those blocks
-    x_reshaped = x.reshape(B, K, H//2, 2, W//2, 2)
-    out = x_reshaped.max(axis=(3, 5))
-    return out
-
-def maxpool2d_backward(dx_pool, x_pre_pool, x_post_pool):
-    """
-    Routes the gradient only to the pixel that had the maximum value.
-    """
-    # Scale up the pooled output and gradients back to the original size
-    x_post_up = x_post_pool.repeat(2, axis=2).repeat(2, axis=3)
-    dx_pool_up = dx_pool.repeat(2, axis=2).repeat(2, axis=3)
-    
-    # Create a binary mask of where the maximums were
-    mask = (x_pre_pool == x_post_up)
-    
-    # Apply mask to gradients
-    return mask * dx_pool_up
-
-def relu(x):
-    return np.maximum(0, x)
-
-def dense(x, weights, bias):
-    return np.dot(x, weights) + bias
-
-def softmax(x):
-    # Stabilized Softmax
-    exp = np.exp(x - np.max(x, axis=1, keepdims=True))
-    return exp / np.sum(exp, axis=1, keepdims=True)
-
-def backward_dense(x, pred, labels, w1):
-    B = len(labels)
-    grad = pred.copy()
-    grad[np.arange(B), labels] -= 1
-    grad /= B
-
-    dw = np.dot(x.T, grad)   
-    db = np.sum(grad, axis=0)
-    dx = np.dot(grad, w1.T)
-
-    return dw, db, dx
-
-# ==========================================
-# TRAINING LOOP
-# ==========================================
-
-def train(images, labels, fixed_kernels, learnable_kernels, conv_bias, w1, b1, lr=0.01, epochs=40, batch_size=32):
-    n = len(images)
-    
-    # Momentum variables
-    v_w1, v_b1 = np.zeros_like(w1), np.zeros_like(b1)
-    v_k, v_cb = np.zeros_like(learnable_kernels), np.zeros_like(conv_bias)
-    momentum = 0.9
-
-    for epoch in range(epochs):
-        indices = np.random.permutation(n)
-        images = images[indices]
-        labels = labels[indices]
+    for name, lbl in CLASSES.items():
+        path = os.path.join(data_dir, name)
+        if not os.path.exists(path): continue
+        files = [f for f in os.listdir(path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))][:max_samples]
         
-        total_loss, correct = 0, 0
+        for f in files:
+            img = cv2.imread(os.path.join(path, f), cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                resized = cv2.resize(img, (32, 32))
+                
+                # 1. Store Original
+                images.append(resized)
+                labels.append(lbl)
+                
+                # 2. TARGETED DATA AUGMENTATION
+                if name == 'left':
+                    images.append(cv2.flip(resized, 1))
+                    labels.append(CLASSES['right'])
+                elif name == 'right':
+                    images.append(cv2.flip(resized, 1))
+                    labels.append(CLASSES['left'])
+                elif name == 'stop':
+                    # Stop signs get Lighting Augmentation (Shadows & Glare)
+                    dark = np.clip(resized * 0.6, 0, 255).astype(np.uint8)
+                    images.append(dark)
+                    labels.append(lbl)
+                    
+                    bright = np.clip(resized * 1.4, 0, 255).astype(np.uint8)
+                    images.append(bright)
+                    labels.append(lbl)
+                elif name == 'uturn':
+                    # U-turns get slight noise
+                    noise = np.random.normal(0, 5, resized.shape).astype(np.float32)
+                    noisy_img = np.clip(resized + noise, 0, 255).astype(np.uint8)
+                    images.append(noisy_img)
+                    labels.append(lbl)
 
-        for i in range(0, n, batch_size):
-            batch_images = images[i:i+batch_size]   
-            batch_labels = labels[i:i+batch_size]
-            B_curr = len(batch_images)
-
-            kernels = np.concatenate([fixed_kernels, learnable_kernels], axis=0)
-
-            # --- FORWARD PASS ---
-            # 1. Convolution (64x64 -> 62x62)
-            x_conv, windows = conv_layer_forward(batch_images, kernels, conv_bias)
-            
-            # 2. Activation
-            x_relu = relu(x_conv)
-            
-            # 3. Max Pooling (62x62 -> 31x31)
-            x_pool = maxpool2d_forward(x_relu)
-
-            # 4. Flatten & Dense
-            x_flat = x_pool.reshape(B_curr, -1)
-            pred = dense(x_flat, w1, b1)
-            pred = softmax(pred)
-
-            # --- METRICS ---
-            loss = -np.mean(np.log(pred[np.arange(B_curr), batch_labels] + 1e-9))
-            total_loss += loss * B_curr
-            correct += np.sum(np.argmax(pred, axis=1) == batch_labels)
-
-            # --- BACKWARD PASS ---
-            # 1. Dense Gradients
-            dw, db, dx_flat = backward_dense(x_flat, pred, batch_labels, w1)
-            
-            # 2. Reshape back to pooled dimensions
-            dx_pool = dx_flat.reshape(x_pool.shape)
-            
-            # 3. Max Pooling Backward (31x31 -> 62x62)
-            dx_relu = maxpool2d_backward(dx_pool, x_relu, x_pool)
-            
-            # 4. ReLU Backward
-            dx_conv = dx_relu.copy()
-            dx_conv[x_conv <= 0] = 0
-
-            # 5. Convolution Backward (Vectorized)
-            # Isolate gradients for LEARNABLE kernels only
-            dx_learnable = dx_conv[:, len(fixed_kernels):, :, :]
-            
-            # einsum magic to calculate kernel gradients instantly
-            d_kernels = np.einsum('bxyhw,bkxy->khw', windows, dx_learnable)
-            d_conv_bias = np.sum(dx_conv, axis=(0, 2, 3))
-
-            # --- UPDATE WEIGHTS (with Momentum) ---
-            v_w1 = momentum * v_w1 - lr * dw
-            w1 += v_w1
-            
-            v_b1 = momentum * v_b1 - lr * db
-            b1 += v_b1
-            
-            v_k = momentum * v_k - lr * d_kernels
-            learnable_kernels += v_k
-            
-            v_cb = momentum * v_cb - lr * d_conv_bias
-            conv_bias += v_cb
-
-        print(f"Epoch {epoch+1:02d} | Loss: {total_loss/n:.4f} | Acc: {correct/n:.2%}")
-
-    return learnable_kernels, conv_bias, w1, b1
+    processed_images = []
+    for img in images:
+        std_img = (img - np.mean(img)) / (np.std(img) + 1e-7)
+        processed_images.append(std_img)
+                
+    X = np.array(processed_images, dtype=np.float32).reshape(-1, 32, 32, 1)
+    Y = np.array(labels, dtype=np.int32)
+    print(f"📈 Total images after targeted augmentation: {len(X)}")
+    return X, Y
 
 # ==========================================
-# INITIALIZATION & EXECUTION
+# 2. VECTORIZED LAYERS
 # ==========================================
+class Conv2D:
+    # Changed default f_size to 5 for Macro-vision
+    def __init__(self, num_filters=32, f_size=5, l2_reg=0.005):
+        self.num_filters = num_filters
+        self.f_size = f_size
+        self.l2_reg = l2_reg
+        self.filters = np.random.randn(num_filters, f_size, f_size) * np.sqrt(2.0 / (f_size * f_size))
 
-# Fixed Kernels Definition
-fixed_kernels = np.array([
-    [[ 0,  1,  0], [ 1,  0, -1], [ 0, -1,  0]], # U-turn
-    [[-1,  0,  1], [-2,  0,  2], [-1,  0,  1]], # Sobel X
-    [[ 1,  0, -1], [ 2,  0, -2], [ 1,  0, -1]],
-    [[ 1,  2,  1], [ 0,  0,  0], [-1, -2, -1]],
-    [[-1, -1, -1], [-1,  8, -1], [-1, -1, -1]], # Octagon detector for stop sign
-    [[-1, -2, -1], [ 0,  0,  0], [ 1,  2,  1]], # Sobel Y
-    [[ 0,  1,  1], [-1,  0,  1], [-1, -1,  0]], # Curve 1
-    [[ 1,  1,  0], [ 1,  0, -1], [ 0, -1, -1]], # Mirror Curve
-    [[ 1, -1,  1], [-1,  1, -1], [ 1, -1,  1]]  # High-freq
-], dtype=np.float32)
+    def forward(self, input_data):
+        self.last_input = input_data
+        b, h, w, _ = input_data.shape
+        oh, ow = h - self.f_size + 1, w - self.f_size + 1
+        out = np.zeros((b, oh, ow, self.num_filters))
+        for i in range(self.f_size):
+            for j in range(self.f_size):
+                region = input_data[:, i:i+oh, j:j+ow, 0:1] 
+                weight = self.filters[:, i, j].reshape(1, 1, 1, -1)
+                out += region * weight
+        return out
 
-num_learnable = 32
-total_kernels = len(fixed_kernels) + num_learnable
+    def backward(self, d_out, lr):
+        b, oh, ow, _ = d_out.shape
+        d_f = np.zeros_like(self.filters)
+        d_in = np.zeros_like(self.last_input)
+        for i in range(self.f_size):
+            for j in range(self.f_size):
+                region = self.last_input[:, i:i+oh, j:j+ow, 0:1]
+                d_f[:, i, j] = np.sum(region * d_out, axis=(0, 1, 2))
+                weight = self.filters[:, i, j].reshape(1, 1, 1, -1)
+                d_in[:, i:i+oh, j:j+ow, 0] += np.sum(d_out * weight, axis=3)
+        
+        self.filters -= lr * (np.clip(d_f, -1.0, 1.0) + self.l2_reg * self.filters)
+        return d_in
 
-# HE INITIALIZATION: Critical for deep learning convergence
-learnable_kernels = np.random.randn(num_learnable, 3, 3) * np.sqrt(2.0 / (3*3))
-conv_bias = np.zeros(total_kernels)
+class LeakyReLU:
+    def __init__(self, alpha=0.01): self.alpha = alpha
+    def forward(self, x):
+        self.last_x = x
+        return np.where(x > 0, x, x * self.alpha)
+    def backward(self, d_out):
+        dx = d_out.copy()
+        dx[self.last_x <= 0] *= self.alpha
+        return dx
 
-# Determine Flatten Size automatically
-sample_output_h = (64 - 3 + 1) // 2 # 64 -> 62 -> 31
-sample_output_w = (64 - 3 + 1) // 2
-flatten_size = total_kernels * sample_output_h * sample_output_w
+class MaxPooling2D:
+    def __init__(self, pool_size=2): self.pool_size = pool_size
+    def forward(self, input_data):
+        self.last_input = input_data
+        b, h, w, c = input_data.shape
+        ph, pw = self.pool_size, self.pool_size
+        oh, ow = h // ph, w // pw
+        reshaped = input_data.reshape(b, oh, ph, ow, pw, c)
+        self.out = reshaped.max(axis=(2, 4))
+        return self.out
+    def backward(self, d_out):
+        b, h, w, c = self.last_input.shape
+        ph, pw = self.pool_size, self.pool_size
+        oh, ow = h // ph, w // pw
+        out_expanded = self.out.reshape(b, oh, 1, ow, 1, c)
+        reshaped_in = self.last_input.reshape(b, oh, ph, ow, pw, c)
+        mask = (reshaped_in == out_expanded)
+        d_out_expanded = d_out.reshape(b, oh, 1, ow, 1, c)
+        d_in_reshaped = mask * d_out_expanded
+        return d_in_reshaped.reshape(b, h, w, c)
 
-# HE INITIALIZATION for Dense Layer
-w1 = np.random.randn(flatten_size, 4) * np.sqrt(2.0 / flatten_size)
-b1 = np.zeros(4)
+class Dropout:
+    def __init__(self, rate=0.3): self.rate = rate
+    def forward(self, x, training=True):
+        if training:
+            self.mask = (np.random.rand(*x.shape) > self.rate) / (1.0 - self.rate)
+            return x * self.mask
+        return x
+    def backward(self, d_out): return d_out * self.mask
 
-print("Loading Images...")
-images, labels = load_dataset("/home/himanshu/ws_final/src/bot_controller/master_dataset/data/train")
+class Dense:
+    def __init__(self, in_dim, out_dim, l2_reg=0.005):
+        self.w = np.random.randn(in_dim, out_dim) * np.sqrt(2.0 / in_dim)
+        self.b = np.zeros(out_dim)
+        self.l2_reg = l2_reg
+    def forward(self, x):
+        self.last_in = x
+        return np.dot(x, self.w) + self.b
+    def backward(self, d_out, lr):
+        dw = np.dot(self.last_in.T, d_out)
+        dx = np.dot(d_out, self.w.T)
+        self.w -= lr * (np.clip(dw, -1.0, 1.0) + self.l2_reg * self.w)
+        self.b -= lr * np.clip(np.sum(d_out, axis=0), -1.0, 1.0)
+        return dx
 
-if len(images) > 0:
-    print(f"Loaded {len(images)} images. Starting Training...")
-    learnable_kernels, conv_bias, w1, b1 = train(images, labels, fixed_kernels, learnable_kernels, conv_bias, w1, b1)
+class SoftmaxLoss:
+    def forward(self, x):
+        e = np.exp(x - np.max(x, axis=1, keepdims=True))
+        self.probs = e / np.sum(e, axis=1, keepdims=True)
+        return self.probs
+    def backward(self, y):
+        dx = self.probs.copy()
+        dx[np.arange(len(y)), y] -= 1
+        return dx / len(y)
+    def get_loss(self, y):
+        return -np.mean(np.log(self.probs[np.arange(len(y)), y] + 1e-8))
 
-    np.savez("model_weights.npz",
-             fixed_kernels=fixed_kernels,
-             learnable_kernels=learnable_kernels,
-             conv_bias=conv_bias,
-             w1=w1,
-             b1=b1)
-    print("Model saved ✅")
-else:
-    print("No images found. Check your dataset path.")
+# ==========================================
+# 3. TRAINING LOOP
+# ==========================================
+def train():
+    X_train, y_train = load_dataset(DATA_DIR)
+    if len(X_train) == 0: return
+
+    counts = np.bincount(y_train)
+    class_weights = {i: len(y_train) / (len(counts) * count) if count > 0 else 1.0 for i, count in enumerate(counts)}
+    print("⚖️ Class Weights Applied:", class_weights)
+
+    # Init Layers: Conv uses 5x5 filter. 
+    # Output of 32x32 -> Conv(5x5) -> 28x28 -> Pool(2x2) -> 14x14
+    # 14 * 14 * 32 filters = 6272 Flattened inputs
+    conv = Conv2D(32, 5, l2_reg=0.005); l_conv = LeakyReLU(); pool = MaxPooling2D()
+    d1 = Dense(6272, 128, l2_reg=0.005); l1 = LeakyReLU(); drop1 = Dropout(0.3)
+    d2 = Dense(128, 64, l2_reg=0.005); l2 = LeakyReLU(); drop2 = Dropout(0.3)
+    out_layer = Dense(64, 4) 
+    loss_fn = SoftmaxLoss()
+
+    lr = 0.01
+    decay = 0.96 # Slightly slower decay to learn the complex 5x5 shapes
+    epochs = 50
+    batch_size = 32
+
+    print(f"🚀 Training Brain...")
+    for epoch in range(epochs):
+        current_lr = lr * (decay ** epoch)
+        indices = np.random.permutation(len(X_train))
+        X_s, y_s = X_train[indices], y_train[indices]
+        
+        epoch_loss, correct = 0, 0
+        for i in range(0, len(X_train), batch_size):
+            xb, yb = X_s[i:i+batch_size], y_s[i:i+batch_size]
+            curr_batch = len(xb)
+            
+            pool_out = pool.forward(l_conv.forward(conv.forward(xb)))
+            flat = pool_out.reshape(curr_batch, -1)
+            h1 = drop1.forward(l1.forward(d1.forward(flat)), training=True)
+            h2 = drop2.forward(l2.forward(d2.forward(h1)), training=True)
+            probs = loss_fn.forward(out_layer.forward(h2))
+            
+            dy = loss_fn.backward(yb)
+            sample_weights = np.array([class_weights[y] for y in yb])
+            dy = dy * sample_weights[:, None]
+
+            g = out_layer.backward(dy, current_lr)
+            g = d2.backward(l2.backward(drop2.backward(g)), current_lr)
+            g = d1.backward(l1.backward(drop1.backward(g)), current_lr)
+            
+            g_reshaped = g.reshape(pool_out.shape)
+            conv.backward(l_conv.backward(pool.backward(g_reshaped)), current_lr)
+
+            epoch_loss += loss_fn.get_loss(yb) * curr_batch
+            correct += np.sum(np.argmax(probs, axis=1) == yb)
+
+        print(f"Epoch {epoch+1:02d} | Acc: {correct/len(X_train):.2%} | Loss: {epoch_loss/len(X_train):.4f} | LR: {current_lr:.6f}")
+
+    np.savez(WEIGHTS_PATH, conv=conv.filters, d1w=d1.w, d1b=d1.b, d2w=d2.w, d2b=d2.b, ow=out_layer.w, ob=out_layer.b)
+    print("✅ Brain Saved Successfully!")
+
+if __name__ == "__main__":
+    train()

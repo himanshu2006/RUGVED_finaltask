@@ -1,158 +1,110 @@
 import os
 import cv2
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 
-# ==========================================
-# CONFIGURATION
-# ==========================================
-class_map = {
-    "left": 0,
-    "right": 1,
-    "stop": 2,
-    "uturn": 3  
-}
+TEST_DATA_DIR = "/home/himanshu/ws_final/src/bot_controller/master_dataset/data/val"
+WEIGHTS_PATH = "/home/himanshu/ws_final/src/model_weights.npz"
+CLASSES = {'left': 0, 'right': 1, 'stop': 2, 'uturn': 3}
 
-labels = ["left", "right", "stop", "uturn"]
+# --- MINIMAL INFERENCE ARCHITECTURE ---
+class Conv2D:
+    def __init__(self, num_filters=32, f_size=5): # Matches new 5x5 size
+        self.num_filters = num_filters
+        self.f_size = f_size
+        self.filters = None 
+    def forward(self, input_data):
+        b, h, w, _ = input_data.shape
+        oh, ow = h - self.f_size + 1, w - self.f_size + 1
+        out = np.zeros((b, oh, ow, self.num_filters))
+        for i in range(self.f_size):
+            for j in range(self.f_size):
+                region = input_data[:, i:i+oh, j:j+ow, 0:1] 
+                weight = self.filters[:, i, j].reshape(1, 1, 1, -1)
+                out += region * weight
+        return out
 
-def load_model(path="model_weights.npz"):
-    data = np.load(path)
-    fixed_kernels = data["fixed_kernels"]
-    learnable_kernels = data["learnable_kernels"]
-    kernels = np.concatenate([fixed_kernels, learnable_kernels], axis=0)
-    return kernels, data["conv_bias"], data["w1"], data["b1"]
+class LeakyReLU:
+    def __init__(self, alpha=0.01): self.alpha = alpha
+    def forward(self, x): return np.where(x > 0, x, x * self.alpha)
 
-# ==========================================
-# VECTORIZED LAYERS (MATCHING TRAINING)
-# ==========================================
+class MaxPooling2D:
+    def __init__(self, pool_size=2): self.pool_size = pool_size
+    def forward(self, input_data):
+        b, h, w, c = input_data.shape
+        ph, pw = self.pool_size, self.pool_size
+        oh, ow = h // ph, w // pw
+        return input_data.reshape(b, oh, ph, ow, pw, c).max(axis=(2, 4))
 
-def conv_layer_forward(images, kernels, biases):
-    kh, kw = kernels.shape[1], kernels.shape[2]
-    windows = sliding_window_view(images, (kh, kw), axis=(1, 2))
-    output = np.einsum('bxyhw,khw->bkxy', windows, kernels)
-    output += biases[None, :, None, None]
-    return output
+class Dropout:
+    def forward(self, x, training=False): return x
 
-def maxpool2d_forward(x):
-    B, K, H, W = x.shape
-    x_reshaped = x.reshape(B, K, H//2, 2, W//2, 2)
-    out = x_reshaped.max(axis=(3, 5))
-    return out
+class Dense:
+    def __init__(self, in_dim, out_dim):
+        self.w = None; self.b = None 
+    def forward(self, x): return np.dot(x, self.w) + self.b
 
-def relu(x):
-    return np.maximum(0, x)
+class SoftmaxLoss:
+    def forward(self, x):
+        e = np.exp(x - np.max(x, axis=1, keepdims=True))
+        return e / np.sum(e, axis=1, keepdims=True)
 
-def dense(x, weights, bias):
-    return np.dot(x, weights) + bias
+# --- TEST EXECUTION ---
+def run_test():
+    if not os.path.exists(WEIGHTS_PATH):
+        print(f"❌ ERROR: Weights not found at {WEIGHTS_PATH}.")
+        return
 
-def softmax(x):
-    exp = np.exp(x - np.max(x, axis=1, keepdims=True))
-    return exp / np.sum(exp, axis=1, keepdims=True)
-
-def predict(image, kernels, conv_bias, w1, b1):
-    # image: (64,64)
-    image = image[np.newaxis, ...]   # (1,64,64)
-
-    # 1. Convolution (Fast Vectorized)
-    x = conv_layer_forward(image, kernels, conv_bias)
+    data = np.load(WEIGHTS_PATH)
     
-    # 2. Activation
-    x = relu(x)
-    
-    # 3. Max Pooling (Reduces from 62x62 to 31x31)
-    x = maxpool2d_forward(x)
-    
-    # 4. Flatten & Dense
-    x_flat = x.reshape(1, -1)
-    pred = dense(x_flat, w1, b1)
-    pred = softmax(pred)
+    # Init Layers with 32 filters (5x5) and 6272 inputs
+    conv = Conv2D(32, 5); conv.filters = data['conv']
+    l_conv = LeakyReLU(); pool = MaxPooling2D()
+    d1 = Dense(6272, 128); d1.w, d1.b = data['d1w'], data['d1b']
+    l1 = LeakyReLU(); drop1 = Dropout()
+    d2 = Dense(128, 64); d2.w, d2.b = data['d2w'], data['d2b']
+    l2 = LeakyReLU(); drop2 = Dropout()
+    out_layer = Dense(64, 4); out_layer.w, out_layer.b = data['ow'], data['ob']
+    softmax_fn = SoftmaxLoss()
 
-    return np.argmax(pred), pred
+    images, labels = [], []
+    for name, lbl in CLASSES.items():
+        path = os.path.join(TEST_DATA_DIR, name)
+        if not os.path.exists(path): continue
+        for f in os.listdir(path):
+            img = cv2.imread(os.path.join(path, f), cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                resized = cv2.resize(img, (32, 32))
+                std_img = (resized - np.mean(resized)) / (np.std(resized) + 1e-7)
+                images.append(std_img)
+                labels.append(lbl)
+
+    X_test = np.array(images).reshape(-1, 32, 32, 1)
+    y_test = np.array(labels)
+
+    print(f"🔍 Analyzing {len(X_test)} test images...")
+    
+    pool_out = pool.forward(l_conv.forward(conv.forward(X_test)))
+    flat = pool_out.reshape(len(X_test), -1)
+    h1 = drop1.forward(l1.forward(d1.forward(flat)), training=False)
+    h2 = drop2.forward(l2.forward(d2.forward(h1)), training=False)
+    probs = softmax_fn.forward(out_layer.forward(h2))
+    
+    preds = np.argmax(probs, axis=1)
+
+    print("\n" + "="*40)
+    print("       FINAL PER-SIGN PERFORMANCE")
+    print("="*40)
+    
+    for name, lbl in CLASSES.items():
+        idx = (y_test == lbl)
+        if np.any(idx):
+            correct = np.sum(preds[idx] == y_test[idx])
+            total = np.sum(idx)
+            print(f"{name.upper():<10} | Acc: {correct/total:>6.2%} ({correct}/{total})")
+    
+    print("-" * 40)
+    print(f"TOTAL SYSTEM ACCURACY: {np.mean(preds == y_test):.2%}")
+    print("="*40)
 
 if __name__ == "__main__":
-    # Load model
-    print("Loading model weights...")
-    kernels, conv_bias, w1, b1 = load_model()
-
-    # PATHS
-    test_dir = "/home/himanshu/ws_final/src/bot_controller/master_dataset/data/test"
-
-    if not os.path.exists(test_dir):
-        print(f"Error: Test directory not found at {test_dir}")
-        exit()
-
-    # Initialize tracking metrics
-    total_images = 0
-    total_correct = 0
-    class_metrics = {class_name: {"correct": 0, "total": 0} for class_name in class_map.keys()}
-    confusion_matrix = np.zeros((4, 4), dtype=int)
-
-    print(f"\nScanning test directory: {test_dir}")
-    print("-" * 40)
-
-    # Iterate through each class folder
-    for class_name, true_label_idx in class_map.items():
-        class_path = os.path.join(test_dir, class_name)
-        
-        if not os.path.exists(class_path):
-            print(f"Warning: Folder for class '{class_name}' not found. Skipping.")
-            continue
-
-        for file in os.listdir(class_path):
-            img_path = os.path.join(class_path, file)
-            original_img = cv2.imread(img_path)
-            
-            if original_img is None: 
-                continue
-            
-            # --- STRICT PREPROCESSING MATCHING TRAINING ---
-            img_resized = cv2.resize(original_img, (64, 64))
-            
-            # Extract ONLY the Red channel (Index 2 in BGR)
-            img_red = img_resized[:, :, 2]
-            
-            # The exact array fed to the network
-            img_normalized = (img_red - np.mean(img_red)) / (np.std(img_red) + 1e-7)
-
-            # Predict
-            pred_class, probs = predict(img_normalized, kernels, conv_bias, w1, b1)
-            
-            # Update confusion matrix
-            confusion_matrix[true_label_idx, pred_class] += 1
-
-            # Record metrics
-            total_images += 1
-            class_metrics[class_name]["total"] += 1
-            
-            if pred_class == true_label_idx:
-                total_correct += 1
-                class_metrics[class_name]["correct"] += 1
-
-    # ==========================================
-    # DISPLAY RESULTS
-    # ==========================================
-    print("\n" + "=" * 40)
-    print("🚦 TESTING EVALUATION RESULTS 🚦")
-    print("=" * 40)
-
-    if total_images == 0:
-        print("No valid images found in the test directories.")
-    else:
-        overall_acc = (total_correct / total_images) * 100
-        print(f"OVERALL ACCURACY: {overall_acc:.2f}% ({total_correct}/{total_images} images)")
-        print("-" * 40)
-        
-        # Display breakdown per class
-        for class_name in class_map.keys():
-            metrics = class_metrics[class_name]
-            total = metrics["total"]
-            correct = metrics["correct"]
-            
-            if total > 0:
-                acc = (correct / total) * 100
-                print(f"Class '{class_name.upper():<5}': {acc:>6.2f}%  ({correct}/{total})")
-            else:
-                print(f"Class '{class_name.upper():<5}':    N/A  (0 images found)")
-        print("=" * 40)
-
-    
+    run_test()
