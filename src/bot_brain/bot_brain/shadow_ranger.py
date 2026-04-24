@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 from collections import deque, Counter
@@ -5,164 +6,167 @@ from collections import deque, Counter
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import String # Added for node-to-node talk
+from std_msgs.msg import String
 
 # ==========================================
-# CONFIGURATION
+# NEW ARCHITECTURE FORWARD PASS (PURE NUMPY)
 # ==========================================
-class_map = {0: "LEFT", 1: "RIGHT", 2: "STOP", 3: "UTURN"}
-
-def load_model(path):
-    data = np.load(path)
-    fixed_kernels = data["fixed_kernels"]
-    learnable_kernels = data["learnable_kernels"]
-    kernels = np.concatenate([fixed_kernels, learnable_kernels], axis=0)
-    return kernels, data["conv_bias"], data["w1"], data["b1"]
-
-# ==========================================
-# VECTORIZED CNN LAYERS (PURE NUMPY)
-# ==========================================
-def conv_layer_forward(images, kernels, biases):
-    kh, kw = kernels.shape[1], kernels.shape[2]
-    windows = sliding_window_view(images, (kh, kw), axis=(1, 2))
-    output = np.einsum('bxyhw,khw->bkxy', windows, kernels)
-    output += biases[None, :, None, None]
-    return output
-
-def maxpool2d_forward(x):
-    B, K, H, W = x.shape
-    out = x.reshape(B, K, H//2, 2, W//2, 2).max(axis=(3, 5))
-    return out
-
-def relu(x):
-    return np.maximum(0, x)
-
-def dense(x, weights, bias):
-    return np.dot(x, weights) + bias
+def leaky_relu(x, alpha=0.01):
+    return np.where(x > 0, x, x * alpha)
 
 def softmax(x):
-    exp = np.exp(x - np.max(x, axis=1, keepdims=True))
-    return exp / np.sum(exp, axis=1, keepdims=True)
+    e = np.exp(x - np.max(x, axis=1, keepdims=True))
+    return e / np.sum(e, axis=1, keepdims=True)
 
-def predict(image, kernels, conv_bias, w1, b1):
-    image = image[np.newaxis, ...]   
-    x = conv_layer_forward(image, kernels, conv_bias)
-    x = relu(x)
-    x = maxpool2d_forward(x)
-    x_flat = x.reshape(1, -1)
-    pred = dense(x_flat, w1, b1)
-    pred = softmax(pred)
-    return np.argmax(pred), np.max(pred)
+def conv_forward(input_data, filters):
+    # input_data: (batch, h, w, 1), filters: (32, 5, 5)
+    b, h, w, _ = input_data.shape
+    f_size = filters.shape[1]
+    oh, ow = h - f_size + 1, w - f_size + 1
+    
+    # Use sliding window for speed
+    windows = sliding_window_view(input_data, (f_size, f_size), axis=(1, 2)) # (b, oh, ow, 1, 5, 5)
+    # Einstein summation to mimic the training script's region * weight logic
+    # b:batch, x:oh, y:ow, c:channel(1), i:f_h, j:f_w, k:filters
+    out = np.einsum('bxycij,kij->bxyk', windows, filters)
+    return out
+
+def maxpool_forward(x, pool_size=2):
+    b, h, w, c = x.shape
+    oh, ow = h // pool_size, w // pool_size
+    reshaped = x.reshape(b, oh, pool_size, ow, pool_size, c)
+    return reshaped.max(axis=(2, 4))
+
+def predict(img, weights):
+    # 1. Conv + LeakyReLU + MaxPool
+    # Input img must be (1, 32, 32, 1)
+    x = conv_forward(img, weights['conv'])
+    x = leaky_relu(x)
+    x = maxpool_forward(x) # Becomes (1, 14, 14, 32)
+    
+    # 2. Flatten
+    x = x.reshape(1, -1)
+    
+    # 3. Dense 1 + LeakyReLU
+    x = np.dot(x, weights['d1w']) + weights['d1b']
+    x = leaky_relu(x)
+    
+    # 4. Dense 2 + LeakyReLU
+    x = np.dot(x, weights['d2w']) + weights['d2b']
+    x = leaky_relu(x)
+    
+    # 5. Output Layer + Softmax
+    logits = np.dot(x, weights['ow']) + weights['ob']
+    probs = softmax(logits)
+    
+    return np.argmax(probs), np.max(probs)
 
 # ==========================================
-# UPDATED VISION NODE
+# VISION NODE
 # ==========================================
 class VisionController(Node):
     def __init__(self):
         super().__init__('vision_node')
         
-        self.get_logger().info("Initializing Shadow Ranger (10-Frame Logic)...")
+        self.get_logger().info("Initializing Shadow Ranger (New 5x5 Deep Brain)...")
         
-        # Adjust this path if needed
-        model_path = "/home/himanshu/ws_final/model_weights.npz"
-          
+        # Load the new weight keys
+        model_path = "/home/himanshu/ws_final/src/model_weights.npz"
         try:
-            self.kernels, self.conv_bias, self.w1, self.b1 = load_model(model_path)
-            self.get_logger().info("CNN Weights Loaded ✅")
+            self.weights = np.load(model_path)
+            self.get_logger().info("Deep Weights Loaded Successfully ✅")
         except Exception as e:
-            self.get_logger().error(f"Weights Load Failed: {e}")
+            self.get_logger().error(f"Failed to load weights: {e}")
             return
-    
-        # Subscriptions & Publishers
+
+        self.class_map = {0: "LEFT", 1: "RIGHT", 2: "STOP", 3: "UTURN"}
+        
+        # ROS Setup
         self.image_sub = self.create_subscription(Image, '/camera/image_raw', self.camera_callback, 10)
         self.sign_pub = self.create_publisher(String, 'detected_sign', 10)
         
-        # --- TUNED VOTING SETUP ---
-        self.buffer_size = 10     # Now checks 10 frames
-        self.vote_threshold = 6   # Requires 60% consensus (6 out of 10)
+        # --- STABLE VOTING (10 frames / 60% threshold) ---
+        self.buffer_size = 10
+        self.vote_threshold = 6 
         self.prediction_buffer = deque(maxlen=self.buffer_size)
-        
         self.current_state = None
 
     def camera_callback(self, msg):
         try:
+            # 1. Convert to Grayscale NumPy (matches training cv2.IMREAD_GRAYSCALE)
             raw_data = np.frombuffer(msg.data, dtype=np.uint8)
             channels = msg.step // msg.width
             img_array = raw_data.reshape((msg.height, msg.width, channels))
-        except Exception as e:
+            
+            # Convert BGR/RGB to Grayscale mathematically
+            if msg.encoding in ['bgr8', 'bgra8']:
+                gray = 0.299 * img_array[:,:,2] + 0.587 * img_array[:,:,1] + 0.114 * img_array[:,:,0]
+            else:
+                gray = 0.299 * img_array[:,:,0] + 0.587 * img_array[:,:,1] + 0.114 * img_array[:,:,2]
+        except Exception:
             return
 
-        # 1. ROI CROP: Focusing on the horizon/walls
-        h, w, _ = img_array.shape
-        start_row, end_row = int(h * 0.15), int(h * 0.55)
-        start_col, end_col = int(w * 0.1), int(w * 0.9) 
-        img_cropped = img_array[start_row:end_row, start_col:end_col]
+        # 2. Aggressive ROI (Top-Middle focus)
+        h, w = gray.shape
+        roi = gray[int(h*0.15):int(h*0.55), int(w*0.1):int(w*0.9)]
 
-        # 2. Pure NumPy Preprocessing (Red Channel Fix)
-        if msg.encoding in ['bgr8', 'bgra8']:
-            red_index = 2
-        else:
-            red_index = 0
-            
-        img_red_full = img_cropped[:, :, red_index]
-
-        # 3. Pure NumPy Resize (64x64)
-        old_h, old_w = img_red_full.shape
-        row_indices = (np.arange(64) * (old_h / 64)).astype(int)
-        col_indices = (np.arange(64) * (old_w / 64)).astype(int)
-        img_red = img_red_full[np.ix_(row_indices, col_indices)]
+        # 3. Resize to 32x32 (matches new CNN input)
+        rh, rw = roi.shape
+        row_indices = (np.arange(32) * (rh / 32)).astype(int)
+        col_indices = (np.arange(32) * (rw / 32)).astype(int)
+        img_32 = roi[np.ix_(row_indices, col_indices)]
         
-        img_normalized = (img_red - np.mean(img_red)) / (np.std(img_red) + 1e-7)
+        # 4. Standardize (matches training script)
+        img_norm = (img_32 - np.mean(img_32)) / (np.std(img_32) + 1e-7)
+        img_input = img_norm.reshape(1, 32, 32, 1)
 
-        # 4. Predict
-        pred_idx, confidence = predict(img_normalized, self.kernels, self.conv_bias, self.w1, self.b1)
+        # 5. Predict
+        idx, conf = predict(img_input, self.weights)
         
-        # Use 0.50 as a strict confidence gate for individual frames
-        if confidence > 0.85: 
-            self.prediction_buffer.append(pred_idx)
+        # Debugging
+        # self.get_logger().info(f"Guess: {self.class_map[idx]} | Conf: {conf:.2f}")
+
+        # 6. Logic Gate (Only vote if reasonably sure)
+        if conf > 0.65: # High gate to avoid floor noise
+            self.prediction_buffer.append(idx)
         else:
             self.prediction_buffer.append(-1)
 
-        # 5. Stable Voting Logic
+        # 7. Stable Voting
         if len(self.prediction_buffer) == self.buffer_size:
             counts = Counter(self.prediction_buffer)
             most_common_pred, most_common_count = counts.most_common(1)[0]
 
-            # OPTION A: Consensus met for a sign
             if most_common_count >= self.vote_threshold and most_common_pred != -1:
-                detected_sign = class_map[most_common_pred]
-                
+                detected_sign = self.class_map[most_common_pred]
                 if self.current_state != detected_sign:
-                    self.get_logger().info(f"🟢 SIGN DETECTED: {detected_sign} ({most_common_count}/{self.buffer_size} votes)")
+                    self.get_logger().info(f"🟢 LOCKED: {detected_sign}")
                     self.current_state = detected_sign
                 
-                # Continuously publish the detected sign
-                sign_msg = String()
-                sign_msg.data = detected_sign
-                self.sign_pub.publish(sign_msg)
-                    
-            # OPTION B: Consensus met that NO sign is visible
+                # Send to Obstacle Node
+                msg_out = String()
+                msg_out.data = detected_sign
+                self.sign_pub.publish(msg_out)
+
             elif most_common_pred == -1 and most_common_count >= self.vote_threshold:
                 if self.current_state is not None:
-                    self.get_logger().info("⚪ Clear Path: Resuming Navigation.")
+                    self.get_logger().info("⚪ Path Clear")
                     self.current_state = None
-            
-            # OPTION C: No clear consensus, keep the last known state
             else:
-                if self.current_state is not None:
-                    # Keep the brain "locked" on the sign to prevent flickering
-                    sign_msg = String()
-                    sign_msg.data = self.current_state
-                    self.sign_pub.publish(sign_msg)
+                # Stubbornly keep the previous state if consensus is low
+                if self.current_state:
+                    msg_out = String()
+                    msg_out.data = self.current_state
+                    self.sign_pub.publish(msg_out)
 
 def main(args=None):
     rclpy.init(args=args)
-    vision_node = VisionController()
+    node = VisionController()
     try:
-        rclpy.spin(vision_node)
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    vision_node.destroy_node()
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
