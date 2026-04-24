@@ -657,14 +657,14 @@
       <self_collide>false</self_collide>
     </model>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_north</name>
       <pose>0.4 3 -0 0 -0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://fire_hydrant</uri>
       <name>cone_uturn</name>
-      <pose>2.19903 4.82117 -0 -0 -0 0</pose>
+      <pose>2.19903 5.43078 0 0 -0 0</pose>
     </include>
     <include>
       <uri>model://uturn_sign</uri>
@@ -672,7 +672,7 @@
       <pose>-0.169137 6.21115 0 0 0 -0.009224</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_west</name>
       <pose>-2.5 -4.5 -0 0 -0 -0</pose>
     </include>
@@ -1147,47 +1147,47 @@
       <self_collide>false</self_collide>
     </model>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_1</name>
       <pose>-5.68925 -1.22793 -0 0 -0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_2</name>
       <pose>-6.27083 2.06419 -0 0 -0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://fire_hydrant</uri>
       <name>cone_uturn_3</name>
       <pose>-7.43583 -10.3521 -0 0 -0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_4</name>
       <pose>-5.08295 -8.05476 -0 -0 0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_5</name>
       <pose>8.45212 -1.19273 -0 -0 -0 0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_6</name>
       <pose>9.97651 2.25738 -0 0 -0 -0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://first_2015_trash_can</uri>
       <name>cone_uturn_8</name>
       <pose>10.0512 -10.3613 -0 -0 -0 0</pose>
     </include>
     <include>
-      <uri>model://construction_cone</uri>
+      <uri>model://fire_hydrant</uri>
       <name>cone_uturn_9</name>
       <pose>1.65846 0.034955 -0 -0 -0 0</pose>
     </include>
     <include>
-      <uri>model://cafe_table</uri>
+      <uri>model://fire_hydrant</uri>
       <name>table_roundabout_1</name>
       <pose>-5.60095 -3.94398 0 0 -0 0</pose>
     </include>
