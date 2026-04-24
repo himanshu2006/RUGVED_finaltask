@@ -4,6 +4,11 @@ from glob import glob
 
 package_name = 'bot_simulation'
 
+# Include all files in model subdirectories
+model_files = [(os.path.join('share', package_name, root), 
+                [os.path.join(root, f) for f in files])
+               for root, _, files in os.walk('model') if files]
+
 setup(
     name=package_name,
     version='0.0.0',
@@ -13,10 +18,9 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
-        (os.path.join('share', package_name, 'model'), glob('model/*.xacro')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
         (os.path.join('share', package_name, 'worlds'), glob('worlds/*.sdf')),
-    ],
+    ] + model_files,
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='himanshu',

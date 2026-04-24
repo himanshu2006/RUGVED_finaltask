@@ -3,7 +3,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, AppendEnvironmentVariable
 from launch.substitutions import Command
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -15,7 +15,11 @@ def generate_launch_description():
     # 1. Paths (Ensure these folders exist in your 'src/bot_simulation'!)
     xacro_file = os.path.join(pkg_path, 'model', 'robot_model.xacro')
     # world_file = os.path.join(pkg_path, 'worlds', 'empty.sdf') 
-    world_file= 'empty.sdf'
+    # world_file= 'empty.sdf'
+
+    world_file = os.path.join(pkg_path, 'worlds', 'world.sdf')
+    model_path = os.path.join(pkg_path, 'model')
+    # Build resource path including all subdirectories (for textures, meshes, etc.)
 
     # 2. Convert Xacro to URDF (Uses 'Command' from substitutions)
     robot_description_config = Command(['xacro ', xacro_file])
@@ -58,6 +62,8 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        AppendEnvironmentVariable('GZ_SIM_RESOURCE_PATH', model_path),
+        AppendEnvironmentVariable('IGN_GAZEBO_RESOURCE_PATH', model_path),
         gazebo,
         node_robot_state_publisher,
         spawn_entity,

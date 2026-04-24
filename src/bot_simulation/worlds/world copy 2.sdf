@@ -1,0 +1,127 @@
+<sdf version='1.9'>
+  <world name='step_by_step_track'>
+    <physics name='1ms' type='ignored'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <plugin name='gz::sim::systems::Physics' filename='ignition-gazebo-physics-system'/>
+    <plugin name='gz::sim::systems::UserCommands' filename='ignition-gazebo-user-commands-system'/>
+    <plugin name='gz::sim::systems::SceneBroadcaster' filename='ignition-gazebo-scene-broadcaster-system'/>
+    <plugin name='gz::sim::systems::Contact' filename='ignition-gazebo-contact-system'/>
+    
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+    
+    <light name='sun' type='directional'>
+      <pose>0 0 10 0 -0 0</pose>
+      <cast_shadows>false</cast_shadows>
+      <intensity>1.5</intensity>
+      <direction>-0.5 0.1 -0.9</direction>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.8 0.8 0.8 1</specular>
+    </light>
+
+    <model name='ground_plane'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'><geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry><surface><friction><ode/></friction><bounce/><contact/></surface></collision>
+        <visual name='visual'>
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material>
+            <diffuse>1 1 1 1</diffuse><specular>0.2 0.2 0.2 1</specular>
+            <pbr><metal><albedo_map>model://asphalt_plane/materials/textures/tarmac.png</albedo_map><metalness>0.0</metalness></metal></pbr>
+          </material>
+        </visual>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+    </model>
+
+    <model name='track_walls'>
+      <static>true</static>
+      <link name='walls'>
+        <material><ambient>0.5 0.5 0.5 1</ambient></material>
+
+        <collision name='start_cap'><pose>0 -1 0.25 0 0 0</pose><geometry><box><size>2 0.1 0.5</size></box></geometry></collision>
+        <visual name='start_cap'><pose>0 -1 0.25 0 0 0</pose><geometry><box><size>2 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='north_left'><pose>-1 3 0.25 0 0 0</pose><geometry><box><size>0.1 8 0.5</size></box></geometry></collision>
+        <visual name='north_left'><pose>-1 3 0.25 0 0 0</pose><geometry><box><size>0.1 8 0.5</size></box></geometry></visual>
+
+        <collision name='center_div'><pose>1 1 0.25 0 0 0</pose><geometry><box><size>0.1 8 0.5</size></box></geometry></collision>
+        <visual name='center_div'><pose>1 1 0.25 0 0 0</pose><geometry><box><size>0.1 8 0.5</size></box></geometry></visual>
+
+        <collision name='uturn_top'><pose>1 7 0.25 0 0 0</pose><geometry><box><size>4.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='uturn_top'><pose>1 7 0.25 0 0 0</pose><geometry><box><size>4.1 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='south_right'><pose>3 2 0.25 0 0 0</pose><geometry><box><size>0.1 10 0.5</size></box></geometry></collision>
+        <visual name='south_right'><pose>3 2 0.25 0 0 0</pose><geometry><box><size>0.1 10 0.5</size></box></geometry></visual>
+
+        <collision name='west_top'><pose>-1.5 -3 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></collision>
+        <visual name='west_top'><pose>-1.5 -3 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></visual>
+        <collision name='west_bot'><pose>-1.5 -5 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></collision>
+        <visual name='west_bot'><pose>-1.5 -5 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='east_top'><pose>5.5 -3 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></collision>
+        <visual name='east_top'><pose>5.5 -3 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></visual>
+        <collision name='east_bot'><pose>5.5 -5 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></collision>
+        <visual name='east_bot'><pose>5.5 -5 0.25 0 0 0</pose><geometry><box><size>5 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='fwd_left'><pose>1 -7.5 0.25 0 0 0</pose><geometry><box><size>0.1 5 0.5</size></box></geometry></collision>
+        <visual name='fwd_left'><pose>1 -7.5 0.25 0 0 0</pose><geometry><box><size>0.1 5 0.5</size></box></geometry></visual>
+        <collision name='fwd_right'><pose>3 -7.5 0.25 0 0 0</pose><geometry><box><size>0.1 5 0.5</size></box></geometry></collision>
+        <visual name='fwd_right'><pose>3 -7.5 0.25 0 0 0</pose><geometry><box><size>0.1 5 0.5</size></box></geometry></visual>
+        <collision name='fwd_cap'><pose>2 -10 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='fwd_cap'><pose>2 -10 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='wt_inner_top'><pose>-4 -1.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></collision>
+        <visual name='wt_inner_top'><pose>-4 -1.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></visual>
+        <collision name='wt_inner_bot'><pose>-4 -6.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></collision>
+        <visual name='wt_inner_bot'><pose>-4 -6.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></visual>
+        <collision name='wt_outer'><pose>-6 -4 0.25 0 0 0</pose><geometry><box><size>0.1 8.1 0.5</size></box></geometry></collision>
+        <visual name='wt_outer'><pose>-6 -4 0.25 0 0 0</pose><geometry><box><size>0.1 8.1 0.5</size></box></geometry></visual>
+        <collision name='wt_cap_top'><pose>-5 0 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='wt_cap_top'><pose>-5 0 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></visual>
+        <collision name='wt_cap_bot'><pose>-5 -8 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='wt_cap_bot'><pose>-5 -8 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></visual>
+
+        <collision name='et_inner_top'><pose>8 -1.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></collision>
+        <visual name='et_inner_top'><pose>8 -1.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></visual>
+        <collision name='et_inner_bot'><pose>8 -6.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></collision>
+        <visual name='et_inner_bot'><pose>8 -6.5 0.25 0 0 0</pose><geometry><box><size>0.1 3 0.5</size></box></geometry></visual>
+        <collision name='et_outer'><pose>10 -4 0.25 0 0 0</pose><geometry><box><size>0.1 8.1 0.5</size></box></geometry></collision>
+        <visual name='et_outer'><pose>10 -4 0.25 0 0 0</pose><geometry><box><size>0.1 8.1 0.5</size></box></geometry></visual>
+        <collision name='et_cap_top'><pose>9 0 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='et_cap_top'><pose>9 0 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></visual>
+        <collision name='et_cap_bot'><pose>9 -8 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></collision>
+        <visual name='et_cap_bot'><pose>9 -8 0.25 0 0 0</pose><geometry><box><size>2.1 0.1 0.5</size></box></geometry></visual>
+
+      </link>
+    </model>
+
+    <include>
+      <name>stop_main_cross</name>
+      <uri>model://stop_sign</uri>
+      <pose>1.2 -2.8 0 0 0 1.5708</pose>
+    </include>
+
+    <include>
+      <name>dead_end_cone_1</name>
+      <uri>model://construction_cone</uri>
+      <pose>1.5 -9.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <name>dead_end_cone_2</name>
+      <uri>model://construction_cone</uri>
+      <pose>2.5 -9.5 0 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>

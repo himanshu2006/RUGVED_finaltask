@@ -1,0 +1,29 @@
+material UTurnSign/Diffuse
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture UTurnSign_Diffuse.png
+      }
+    }
+  }
+}
+
+material UTurnSign/Specular
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture UTurnSign_Spec.png
+      }
+    }
+  }
+}

@@ -17,3 +17,5 @@ Thumbs.db
 # Large Database files
 *.db
 *.sqlite
+
+**/__pycache__/

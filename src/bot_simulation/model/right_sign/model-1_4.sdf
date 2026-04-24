@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="Right Sign">
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://right_sign/meshes/right_sign.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://right_sign/meshes/right_sign.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://right_sign/materials/scripts</uri>
+            <uri>model://right_sign/materials/textures</uri>
+            <name>RightSign/Diffuse</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

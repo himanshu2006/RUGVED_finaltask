@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="Right Sign">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://right_sign/meshes/right_sign.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://right_sign/meshes/right_sign.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.2 0.2 0.2 1</specular>
+          <pbr>
+            <metal>
+              <albedo_map>model://right_sign/materials/textures/RightSign_Diffuse.png</albedo_map>
+              <metalness>0.0</metalness>
+              <roughness>0.2</roughness>
+            </metal>
+          </pbr>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

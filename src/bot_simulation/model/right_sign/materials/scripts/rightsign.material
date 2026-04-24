@@ -1,0 +1,29 @@
+material RightSign/Diffuse
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture RightSign_Diffuse.png
+      }
+    }
+  }
+}
+
+material RightSign/Specular
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture RightSign_Spec.png
+      }
+    }
+  }
+}
