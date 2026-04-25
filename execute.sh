@@ -29,4 +29,11 @@ ros2 run bot_brain obstacle_avoid_node
 exec bash
 "
 
-#Run this one time -> chmod +x run_all.sh
+# Terminal 3
+gnome-terminal -- bash -c "
+cd $WORKSPACE
+ros2 run rqt_image_view rqt_image_view
+exec bash
+"
+
+#Run this one time -> chmod +x execute.sh

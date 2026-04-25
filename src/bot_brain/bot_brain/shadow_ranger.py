@@ -116,9 +116,7 @@ class VisionController(Node):
             raw = np.frombuffer(msg.data, dtype=np.uint8).reshape((msg.height, msg.width, -1))
             gray = 0.299*raw[:,:,2] + 0.587*raw[:,:,1] + 0.114*raw[:,:,0] if msg.encoding in ['bgr8','bgra8'] else \
                    0.299*raw[:,:,0] + 0.587*raw[:,:,1] + 0.114*raw[:,:,2]
-        except Exception: 
-            self.get_logger().error("Error processing camera image")
-            return
+        except Exception: return
 
         h, w = gray.shape
         roi = gray[int(h*0.15):int(h*0.45), int(w*0.25):int(w*0.75)].astype(np.uint8)
@@ -130,19 +128,9 @@ class VisionController(Node):
             img_input = (cv2.resize(shape_edges, (64, 64)).astype(np.float32) / 255.0)[np.newaxis, np.newaxis, :, :]
             idx, conf, gap = predict(img_input, self.weights)
             
-            # --- NEW: SAVE THE PROCESSED IMAGE TO DISK ---
-            self.save_counter += 1
-            if self.save_counter % 5 == 0:  # Save 1 out of every 5 frames to prevent lag
-                # Format: "0015_saw_LEFT_conf_0.85.png"
-                img_name = f"{self.save_counter:04d}_saw_{self.class_map[idx]}_conf_{conf:.2f}.png"
-                img_path = os.path.join(self.debug_dir, img_name)
-                # Multiply img_input back to 255 so OpenCV can save it as a visible image
-                img_to_save = (img_input[0, 0] * 255.0).astype(np.uint8)
-                cv2.imwrite(img_path, img_to_save)
-            # ----------------------------------------------
-            
             is_valid = (conf > 0.95 and gap > 0.45) if idx == 2 else (conf > 0.70 and gap > 0.20)
             self.prediction_buffer.append(idx if is_valid else -1)
+
         # 4. Voting Logic
         if len(self.prediction_buffer) == self.buffer_size:
             most_common_pred, count = Counter(self.prediction_buffer).most_common(1)[0]
