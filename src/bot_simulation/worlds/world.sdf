@@ -674,7 +674,7 @@
     <include>
       <uri>model://left_sign</uri>
       <name>sign_east_t</name>
-      <pose>2.61491 -2.87916 0 0 0 -2.86519</pose>
+      <pose>2.90695 -2.79632 0 0 0 -2.86519</pose>
     </include>
     <model name='wall_center_div_1'>
       <static>true</static>

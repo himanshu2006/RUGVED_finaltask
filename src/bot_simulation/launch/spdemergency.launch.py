@@ -56,7 +56,8 @@ def generate_launch_description():
             '/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             '/camera/image_raw@sensor_msgs/msg/Image[ignition.msgs.Image',
             '/cmd_vel@geometry_msgs/msg/Twist]ignition.msgs.Twist',
-            '/model/my_bot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'
+            '/model/my_bot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
+            '/odom@nav_msgs/msg/Odometry[ignition.msgs.Odometry'       
         ],
         output='screen'
     )

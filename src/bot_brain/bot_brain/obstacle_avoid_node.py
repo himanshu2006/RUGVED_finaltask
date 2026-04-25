@@ -15,7 +15,6 @@ class obstacleavoid(Node):
         
         self.subscription = self.create_subscription(LaserScan, 'scan', self.lidar_callback, 10)
         
-        
         self.sign_sub = self.create_subscription(String, 'detected_sign', self.sign_callback, 10)
         
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
@@ -77,7 +76,7 @@ class obstacleavoid(Node):
         self.get_logger().info("Executing LEFT turn from memory!")
         msg = Twist()
         msg.linear.x = 0.2
-        msg.angular.z = 0.5 
+        msg.angular.z = 0.7
         self.publisher.publish(msg)
         time.sleep(3.0)
 
